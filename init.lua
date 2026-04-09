@@ -230,6 +230,34 @@ vim.api.nvim_create_autocmd('TextYankPost', {
   callback = function() vim.hl.on_yank() end,
 })
 
+-- Highlight trailing whitespace (hidden during insert mode to avoid distraction)
+vim.api.nvim_set_hl(0, 'TrailingWhitespace', { bg = 'red' })
+local trailing_ws_group = vim.api.nvim_create_augroup('kickstart-trailing-whitespace', { clear = true })
+vim.api.nvim_create_autocmd({ 'BufWinEnter', 'InsertLeave' }, {
+  group = trailing_ws_group,
+  pattern = '*',
+  callback = function()
+    if vim.bo.buftype == '' then
+      vim.fn.clearmatches()
+      vim.fn.matchadd('TrailingWhitespace', [[\s\+$]])
+    end
+  end,
+})
+vim.api.nvim_create_autocmd('InsertEnter', {
+  group = trailing_ws_group,
+  pattern = '*',
+  callback = function()
+    vim.fn.clearmatches()
+  end,
+})
+vim.api.nvim_create_autocmd('BufWinLeave', {
+  group = trailing_ws_group,
+  pattern = '*',
+  callback = function()
+    vim.fn.clearmatches()
+  end,
+})
+
 -- [[ Install `lazy.nvim` plugin manager ]]
 --    See `:help lazy.nvim.txt` or https://github.com/folke/lazy.nvim for more info
 local lazypath = vim.fn.stdpath 'data' .. '/lazy/lazy.nvim'
